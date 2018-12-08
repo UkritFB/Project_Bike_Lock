@@ -4,7 +4,7 @@
 #include<SoftwareSerial.h>
 SoftwareSerial ArduinoSerial(3, 2); // RX, TX
 //-----------------------------------------------------------------------------
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+LiquidCrystal_I2C lcd(0x3f, 16, 2);
 const byte ROWS = 4; //four rows
 const byte COLS = 4; //three columns
 char keys[ROWS][COLS] = {
@@ -17,15 +17,15 @@ byte rowPins[ROWS] = {7, 6, 5, 4}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {11, 10, 9, 8}; //connect to the column pinouts of the keypad
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 //-----------------------------------------------------------------------------
-char pass_key[4] = {'0', '0', '0', '0'};
-int pass_bit = 0;
-int key[4] = {9, 9, 9, 9};
-int i = 0;
-char aa;
-int state = 0;
-int state_lock = 1;
-int randNumber;
-int Reset_MCU = A0;
+char pass_key[4] = {'*', '*', '*', '*'};
+char temp_key[4] = {'0', '0', '0', '0'};
+int  pass_bit = 0;
+int  key[4] = {9, 9, 9, 9};
+int  i = 0;
+char aa = ' ';
+int  state_lock = 1;
+int  randNumber;
+int  Reset_MCU = A0;
 //-----------------------------------------------------------------------------
 void setup() {
   lcd.begin();
@@ -40,7 +40,8 @@ void setup() {
 void loop() {
   if (state_lock == 1) {
     while (i != '#') {
-      i = ReadKey1();
+      i = keypad.getKey();
+      digitalWrite(13, 1);
       DP2();
     }
     Serial.println("LOCK !!!!!");
@@ -51,38 +52,46 @@ void loop() {
     ArduinoSerial.print(String(key[0]) + String(key[1]) + String(key[2]) + String(key[3]));
     ArduinoSerial.print("\n");
     state_lock = 0;
-    DP1();
+    digitalWrite(13, 0);
   }
   else {
     while (pass_bit <= 3) {
       aa = ReadKey();
       pass_key[pass_bit - 1] = aa;
-      //DP1();
+      Serial.print(state_lock);
+      Serial.print(" ");
       Serial.print(pass_key[0]);
       Serial.print(pass_key[1]);
       Serial.print(pass_key[2]);
       Serial.println(pass_key[3]);
+      DP1();
     }
-    if (pass_key[0] == '5') {
-      Serial.println("UNLOCK !!!!!");
-      delay("100000");
-      i = 0;
+    //    temp_key[0] = char(key[0]);
+    //    temp_key[1] = char(key[1]);
+    //    temp_key[2] = char(key[2]);
+    //    temp_key[3] = char(key[3]);
+    if (pass_key[0] == pass_key[0] && pass_key[1] == pass_key[1] && pass_key[2] == pass_key[2] && pass_key[3] == pass_key[3]) {
       pass_bit = 0;
-      pass_key[0] = {'0'};
-      pass_key[1] = {'0'};
-      pass_key[2] = {'0'};
-      pass_key[3] = {'0'};
+      i = 0;
+      pass_key[0] = {'*'};
+      pass_key[1] = {'*'};
+      pass_key[2] = {'*'};
+      pass_key[3] = {'*'};
       digitalWrite(13, 1);
       state_lock = 1;
-
+      //  DP2();
     }
     else {
+      DP3();
+      digitalWrite(13, 0);
       state_lock = 0;
       pass_bit = 0;
-      pass_key[0] = {'0'};
-      pass_key[1] = {'0'};
-      pass_key[2] = {'0'};
-      pass_key[3] = {'0'};
+      i = 0;
+      pass_key[0] = {'*'};
+      pass_key[1] = {'*'};
+      pass_key[2] = {'*'};
+      pass_key[3] = {'*'};
+      //  DP1();
     }
   }
 }
@@ -107,29 +116,38 @@ int ReadKey() {
 }
 //-----------------------------------------------------------------------------
 void DP1() {
+
   lcd.setCursor(0, 1);
-  lcd.print("                    ");
-  lcd.setCursor(0, 0);
-  lcd.print("     L O C K !!!");
-  lcd.setCursor(1, 2);
-  lcd.print("Insert Pass : ");
-  lcd.setCursor(15, 2);
+  lcd.print("     L O C K ");
+  lcd.setCursor(1, 0);
+  lcd.print(" Pass : ");
+  lcd.setCursor(9, 0);
   lcd.print(pass_key[0]);
-  lcd.setCursor(16, 2);
+  lcd.setCursor(10, 0);
+  lcd.print(" ");
+  lcd.setCursor(11, 0);
   lcd.print(pass_key[1]);
-  lcd.setCursor(17, 2);
+  lcd.setCursor(12, 0);
+  lcd.print(" ");
+  lcd.setCursor(13, 0);
   lcd.print(pass_key[2]);
-  lcd.setCursor(18, 2);
+  lcd.setCursor(14, 0);
+  lcd.print(" ");
+  lcd.setCursor(15, 0);
   lcd.print(pass_key[3]);
 }
 void DP2() {
-  lcd.setCursor(0, 2);
-  lcd.print("                    ");
-  lcd.setCursor(0, 0);
-  lcd.print("                    ");
   lcd.setCursor(0, 1);
-  lcd.print("   U N L O C K !!!");
+  lcd.print(" Press Enter  # ");
+  lcd.setCursor(0, 0);
+  lcd.print("  U N L O C K   ");
 
+}
+void DP3() {
+  lcd.setCursor(0, 0);
+  lcd.print("                      ");
+  lcd.setCursor(0, 1);
+  lcd.print("fffffffffffffff");
 }
 //-----------------------------------------------------------------------------
 void clear_key(char kk) {
