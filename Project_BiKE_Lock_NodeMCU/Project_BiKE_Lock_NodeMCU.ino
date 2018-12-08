@@ -5,8 +5,8 @@ void Line_Notify(String message) ;
 #include <ESP8266WiFi.h>
 
 // Config connect WiFi
-#define WIFI_SSID "BACKDOOR"
-#define WIFI_PASSWORD "0892322398"
+#define WIFI_SSID "Ukrit's iPhone"
+#define WIFI_PASSWORD "0959187000"
 
 // Line config
 #define LINE_TOKEN "YRM53rgObbBaHBZC5RE5kOgV9mEZxA7A4vAtFHIWha2"
@@ -33,7 +33,8 @@ void setup() {
 }
 
 void loop() {
-    while ( NodeSerial.available() > 0) {
+  //  Line_Notify(message);
+  while ( NodeSerial.available() > 0) {
     int val =  NodeSerial.parseFloat();
     if ( NodeSerial.read() == '\n') {
       Serial.println(val);
